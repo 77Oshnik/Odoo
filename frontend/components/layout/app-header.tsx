@@ -29,6 +29,11 @@ export const AppHeader = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.auth)
 
+  const navButtonBase =
+    "px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+  const navButtonInactive =
+    "text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/10"
+  const navButtonActive = "bg-indigo-500/20 text-indigo-200"
   const breadcrumbs = useMemo(() => {
     const segments = pathname.split("/").filter(Boolean)
     const items = segments.map((segment, index) => ({
@@ -89,31 +94,52 @@ export const AppHeader = () => {
           <Link href="/dashboard" className="text-lg font-bold tracking-tight text-indigo-400">
             StockMaster
           </Link>
-          <NavigationMenu className="flex-1">
-            <NavigationMenuList className="justify-start gap-2">
+          <NavigationMenu className="flex-1 overflow-visible">
+            <NavigationMenuList className="justify-start gap-2 overflow-visible">
               {navConfig.map((item) => (
                 <NavigationMenuItem key={item.label}>
-                  {item.type === 'link' ? (
+                  {item.type === "link" ? (
                     <NavigationMenuLink asChild active={pathname === item.href}>
-                      <Link href={item.href}>{item.label}</Link>
+                      <Link
+                        href={item.href}
+                        className={`${navButtonBase} ${
+                          pathname === item.href ? navButtonActive : navButtonInactive
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
                     </NavigationMenuLink>
                   ) : (
-                    <>
-                      <NavigationMenuTrigger className="px-3 py-2 rounded-lg text-sm font-medium text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/10 data-[state=open]:bg-indigo-500/20 data-[state=open]:text-indigo-200 transition-all duration-200">
+                    <div className="relative">{/* container for absolute dropdown */}
+                      <NavigationMenuTrigger
+                        className={`${navButtonBase} ${navButtonInactive} data-[state=open]:${navButtonActive} `}
+                      >
                         {item.label}
                       </NavigationMenuTrigger>
-                      <NavigationMenuContent className="relative z-50">
+                      <NavigationMenuContent className="absolute left-0 mt-2 z-50">
                         <ul className="grid gap-2 rounded-lg bg-white/5 backdrop-blur-xl border border-white/10 p-3 shadow-2xl md:w-56">
                           {item.items.map((subItem) => (
                             <li key={subItem.href}>
-                              <NavigationMenuLink asChild active={pathname.startsWith(subItem.href)}>
-                                <Link href={subItem.href}>{subItem.label}</Link>
+                              <NavigationMenuLink
+                                asChild
+                                active={pathname.startsWith(subItem.href)}
+                              >
+                                <Link
+                                  href={subItem.href}
+                                  className={`block px-3 py-2 rounded-md text-sm transition-colors duration-150 ${
+                                    pathname.startsWith(subItem.href)
+                                      ? "bg-indigo-500/20 text-indigo-200"
+                                      : "text-white/80 hover:bg-white/5 hover:text-indigo-300"
+                                  }`}
+                                >
+                                  {subItem.label}
+                                </Link>
                               </NavigationMenuLink>
                             </li>
                           ))}
                         </ul>
                       </NavigationMenuContent>
-                    </>
+                    </div>
                   )}
                 </NavigationMenuItem>
               ))}
