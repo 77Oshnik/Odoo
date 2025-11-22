@@ -183,7 +183,7 @@ const searchProducts = async (req, res) => {
 
 const getLowStockProducts = async (_req, res) => {
   try {
-    const products = await Product.find({ isActive: true }).populate('reorderingRule');
+    const products = await Product.find({ isActive: true });
 
     const lowStockProducts = products.filter((product) => {
       const rule = product.reorderingRule;

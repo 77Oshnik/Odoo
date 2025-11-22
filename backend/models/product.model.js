@@ -47,8 +47,8 @@ const productSchema = new mongoose.Schema(
       min: 0
     },
     reorderingRule: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'ReorderingRule'
+      minimumQuantity: { type: Number, default: 0 },
+      maximumQuantity: { type: Number, default: 0 }
     },
     isActive: {
       type: Boolean,
