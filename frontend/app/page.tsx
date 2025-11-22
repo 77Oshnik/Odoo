@@ -1,11 +1,13 @@
 'use client';
 
-import Image from "next/image";
 import Link from "next/link";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../lib/store";
 import { logout } from "../lib/features/auth/authSlice";
 import { Button } from "../components/ui/button";
+import HeroGeometric from "@/components/ui/modern-hero-section";
+import FeatureGallery from "@/components/feature-gallery";
+import Footer from "@/components/footer";
 
 export default function Home() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -16,27 +18,33 @@ export default function Home() {
   };
 
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <h1 className="text-4xl font-bold">Welcome to Odoo Clone</h1>
+    <main className="bg-[#030303] min-h-screen">
+      <HeroGeometric
+        badge="Odoo Clone"
+        title1="Manage Your"
+        title2="Business Efficiently"
+      >
+        <div className="flex flex-col items-center gap-6">
+          {user ? (
+            <div className="flex flex-col gap-4 items-center">
+              <p className="text-xl text-white/90">Hello, {user.name}!</p>
+              <p className="text-white/60">{user.email}</p>
+              <Button onClick={handleLogout} variant="secondary">Logout</Button>
+            </div>
+          ) : (
+            <div className="flex gap-4 items-center flex-col sm:flex-row">
+              <Link href="/login">
+                <Button size="lg" className="bg-white text-black hover:bg-white/90">Login</Button>
+              </Link>
+              <Link href="/signup">
+                <Button variant="outline" size="lg" className="text-black border-white/20 hover:bg-white/10">Sign Up</Button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </HeroGeometric>
 
-        {user ? (
-          <div className="flex flex-col gap-4 items-center sm:items-start">
-            <p className="text-xl">Hello, {user.name}!</p>
-            <p className="text-gray-600">{user.email}</p>
-            <Button onClick={handleLogout}>Logout</Button>
-          </div>
-        ) : (
-          <div className="flex gap-4 items-center flex-col sm:flex-row">
-            <Link href="/login">
-              <Button size="lg">Login</Button>
-            </Link>
-            <Link href="/signup">
-              <Button variant="outline" size="lg">Sign Up</Button>
-            </Link>
-          </div>
-        )}
-      </main>
-    </div>
+      <Footer />
+    </main>
   );
 }

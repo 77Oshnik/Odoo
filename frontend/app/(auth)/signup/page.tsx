@@ -8,11 +8,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 import { signup, clearError } from '../../../lib/features/auth/authSlice';
 import { AppDispatch, RootState } from '../../../lib/store';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
+import { ArrowLeft } from 'lucide-react';
 
 const signupSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -51,69 +53,101 @@ export default function SignupPage() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-            <div className="w-full max-w-md space-y-8">
+        <div className="relative flex min-h-screen items-center justify-center bg-[#030303] px-4 py-12 sm:px-6 lg:px-8 overflow-hidden">
+            {/* Background Effects */}
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.05] via-transparent to-rose-500/[0.05] blur-3xl" />
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-[100px]" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-rose-500/10 blur-[100px]" />
+            </div>
+
+            <Link
+                href="/"
+                className="absolute top-8 left-8 z-20 flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+            >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Back to Home</span>
+            </Link>
+
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="relative z-10 w-full max-w-md space-y-8 rounded-2xl bg-white/5 p-8 backdrop-blur-xl border border-white/10 shadow-2xl"
+            >
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-                        Create your account
+                    <h2 className="mt-2 text-center text-3xl font-bold tracking-tight text-white">
+                        Create Account
                     </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        Or{' '}
-                        <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-                            sign in to your existing account
-                        </Link>
+                    <p className="mt-2 text-center text-sm text-white/60">
+                        Join us and start managing your business
                     </p>
                 </div>
+
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                    <div className="space-y-4 rounded-md shadow-sm">
-                        <div>
-                            <Label htmlFor="name">Full Name</Label>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="name" className="text-white/80">Full Name</Label>
                             <Input
                                 id="name"
                                 type="text"
                                 autoComplete="name"
                                 {...register('name')}
-                                className={errors.name ? 'border-red-500' : ''}
+                                className={`bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-indigo-500/50 focus:ring-indigo-500/20 ${errors.name ? 'border-red-500' : ''}`}
+                                placeholder="John Doe"
                             />
                             {errors.name && (
-                                <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
+                                <p className="text-sm text-red-400">{errors.name.message}</p>
                             )}
                         </div>
-                        <div>
-                            <Label htmlFor="email">Email address</Label>
+                        <div className="space-y-2">
+                            <Label htmlFor="email" className="text-white/80">Email address</Label>
                             <Input
                                 id="email"
                                 type="email"
                                 autoComplete="email"
                                 {...register('email')}
-                                className={errors.email ? 'border-red-500' : ''}
+                                className={`bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-indigo-500/50 focus:ring-indigo-500/20 ${errors.email ? 'border-red-500' : ''}`}
+                                placeholder="name@example.com"
                             />
                             {errors.email && (
-                                <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+                                <p className="text-sm text-red-400">{errors.email.message}</p>
                             )}
                         </div>
-                        <div>
-                            <Label htmlFor="password">Password</Label>
+                        <div className="space-y-2">
+                            <Label htmlFor="password" className="text-white/80">Password</Label>
                             <Input
                                 id="password"
                                 type="password"
                                 autoComplete="new-password"
                                 {...register('password')}
-                                className={errors.password ? 'border-red-500' : ''}
+                                className={`bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-indigo-500/50 focus:ring-indigo-500/20 ${errors.password ? 'border-red-500' : ''}`}
+                                placeholder="••••••••"
                             />
                             {errors.password && (
-                                <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+                                <p className="text-sm text-red-400">{errors.password.message}</p>
                             )}
                         </div>
                     </div>
 
                     <div>
-                        <Button type="submit" className="w-full" disabled={isLoading}>
+                        <Button
+                            type="submit"
+                            className="w-full bg-gradient-to-r from-indigo-600 to-rose-600 hover:from-indigo-500 hover:to-rose-500 text-white border-0"
+                            disabled={isLoading}
+                        >
                             {isLoading ? 'Creating account...' : 'Sign up'}
                         </Button>
                     </div>
+
+                    <div className="text-center text-sm">
+                        <span className="text-white/60">Already have an account? </span>
+                        <Link href="/login" className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
+                            Sign in
+                        </Link>
+                    </div>
                 </form>
-            </div>
+            </motion.div>
         </div>
     );
 }
