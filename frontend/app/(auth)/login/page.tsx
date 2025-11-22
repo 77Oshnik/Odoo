@@ -41,7 +41,7 @@ export default function LoginPage() {
         }
         if (user) {
             toast.success('Logged in successfully');
-            router.push('/'); // Redirect to dashboard/home
+            router.push('/dashboard');
         }
     }, [error, user, dispatch, router]);
 

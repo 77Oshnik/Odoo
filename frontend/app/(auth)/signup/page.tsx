@@ -42,7 +42,7 @@ export default function SignupPage() {
         }
         if (user) {
             toast.success('Account created successfully');
-            router.push('/');
+            router.push('/dashboard');
         }
     }, [error, user, dispatch, router]);
 
