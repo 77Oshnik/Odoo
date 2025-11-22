@@ -7,53 +7,36 @@ A modern, full-stack inventory management system built with Next.js and Node.js.
 ### 📊 Dashboard
 - Real-time KPIs and metrics
 - Quick filters for categories, warehouses, and document statuses
-- Inventory overview with low stock alerts
-- Operational snapshot showing pending receipts, deliveries, and transfers
-- Interactive cards with navigation to detailed views
 
 ### 📦 Product Management
 - Complete CRUD operations for products
 - Category-based organization
 - Multi-warehouse stock tracking
-- Stock by location visibility
-- Low stock product monitoring
-- SKU-based product identification
 
 ### 🏭 Warehouse Management
 - Multiple warehouse support
 - Location-based organization
 - Address and contact information
-- Active/inactive warehouse status
-- Stock distribution across warehouses
 
 ### 📥 Receipt Management
 - Inbound stock receipt processing
 - Supplier tracking
-- Product-wise quantity received
-- Receipt validation workflow
 - Status tracking (draft, waiting, ready, done, canceled)
 
 ### 📤 Delivery Order Management
 - Outbound delivery processing
 - Customer order tracking
 - Pick, Pack, and Validate workflow
-- Multi-product deliveries
-- Delivery status tracking (draft, waiting, ready, done, canceled)
-- Quantity tracking (ordered, picked, packed)
 
 ### ⚖️ Stock Adjustments
 - Inventory discrepancy correction
 - Reason tracking (damaged, lost, found, expired, miscounted, other)
 - Recorded vs counted quantity comparison
-- Automatic stock ledger updates
-- Audit trail with user tracking
 
 ### 🔄 Internal Transfers
 - Inter-warehouse stock transfers
 - Source and destination warehouse tracking
-- Transfer scheduling
 - Status management (draft, waiting, ready, done, canceled)
-- Product-wise quantity tracking
 
 ### 📋 Categories
 - Product categorization
@@ -68,11 +51,6 @@ A modern, full-stack inventory management system built with Next.js and Node.js.
 ### 🔐 Authentication
 - Secure user authentication
 - JWT-based authorization
-- Password encryption with bcrypt
-- Email-based login
-- Forgot password functionality
-- Protected routes
-
 ## 🛠️ Tech Stack
 
 ### Frontend
@@ -258,17 +236,6 @@ cd backend
 npm run seed
 ```
 
-This will create:
-- 3 Users (admin@stockmaster.com / password123)
-- 5 Categories
-- 5 Locations
-- 3 Warehouses
-- 8 Products with stock
-- 3 Receipts
-- 4 Delivery Orders
-- 3 Stock Adjustments
-- 3 Internal Transfers
-
 3. **Start Backend Server**
 ```bash
 cd backend
@@ -283,28 +250,39 @@ npm run dev
 ```
 Application runs on http://localhost:3000
 
-### Default Login Credentials
-```
-Email: admin@stockmaster.com
-Password: password123
-```
 
 ## 📸 Screenshots
 
 ### Landing Page
-![Landing Page](./screenshots/landing-page.png)
+
+<img width="1900" height="866" alt="Screenshot 2025-11-22 164911" src="https://github.com/user-attachments/assets/e4f8e089-688e-4fe5-8648-8e677b9af9ec" />
+<img width="1911" height="858" alt="Screenshot 2025-11-22 164919" src="https://github.com/user-attachments/assets/f48dfc5c-59d0-45af-aca5-7928194394e8" />
+<img width="1917" height="862" alt="Screenshot 2025-11-22 164930" src="https://github.com/user-attachments/assets/630b64cd-5561-450c-9d84-aefd43135ed0" />
+<img width="1918" height="867" alt="Screenshot 2025-11-22 164939" src="https://github.com/user-attachments/assets/762a78fb-80d8-44d3-8fb6-caa3043b006b" />
+
 
 ### Dashboard
-![Dashboard](./screenshots/dashboard.png)
+<img width="1572" height="2069" alt="localhost_3000_dashboard" src="https://github.com/user-attachments/assets/40802f93-52ff-4b82-8527-ddd462d6065b" />
+
 
 ### Products Management
-![Products](./screenshots/products.png)
+<img width="1966" height="1306" alt="warehouse" src="https://github.com/user-attachments/assets/6dcfe074-66c1-4eb0-b211-c36fcefbf25f" />
+<img width="1966" height="1306" alt="location" src="https://github.com/user-attachments/assets/8292e548-8b13-4577-b617-07b57973d7b8" />
+
+<img width="1991" height="1088" alt="receipts" src="https://github.com/user-attachments/assets/fa69d163-afe9-433c-bfe3-bba549e84484" />
+
+<img width="1966" height="1180" alt="prodcuts" src="https://github.com/user-attachments/assets/20389769-1f5a-4273-b393-0cccf175f015" />
+<img width="1991" height="1088" alt="category" src="https://github.com/user-attachments/assets/44b43bb2-1413-4e26-a027-f427804e2167" />
+
 
 ### Delivery Orders
-![Delivery Orders](./screenshots/delivery-orders.png)
+<img width="1991" height="1088" alt="delivery order" src="https://github.com/user-attachments/assets/ba028ecc-6f84-4f1e-bb0e-617908a76d10" />
+
+<img width="1991" height="1088" alt="move history" src="https://github.com/user-attachments/assets/6501bd3e-15f5-414d-aa96-c70fc0bb9385" />
 
 ### Stock Adjustments
-![Stock Adjustments](./screenshots/stock-adjustments.png)
+<img width="1991" height="1088" alt="stock adjust" src="https://github.com/user-attachments/assets/6c430b39-ce0d-4b4f-a192-44c10be00b6c" />
+
 
 ## 🔑 Key Backend Functionalities
 
@@ -420,13 +398,6 @@ This project is licensed under the ISC License.
 ## 👥 Authors
 
 - Team - Quantum Quorum
-
-## 🙏 Acknowledgments
-
-- shadcn/ui for the beautiful component library
-- Next.js team for the amazing framework
-- MongoDB team for the robust database
-- All open-source contributors
 
 ---
 
