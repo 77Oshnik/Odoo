@@ -4,6 +4,11 @@ const Warehouse = require('../models/warehouse.model');
 const StockLedger = require('../models/stockLedger.model');
 const mongoose = require('mongoose');
 
+const transferWarehousePopulateConfig = {
+  select: 'name address isActive location',
+  populate: { path: 'location', select: 'name code' }
+};
+
 const getInternalTransfers = async (req, res) => {
   try {
     const { status, sourceWarehouse, destinationWarehouse } = req.query;
@@ -20,8 +25,8 @@ const getInternalTransfers = async (req, res) => {
     }
 
     const internalTransfers = await InternalTransfer.find(filter)
-      .populate('sourceWarehouse', 'name location')
-      .populate('destinationWarehouse', 'name location')
+      .populate({ path: 'sourceWarehouse', ...transferWarehousePopulateConfig })
+      .populate({ path: 'destinationWarehouse', ...transferWarehousePopulateConfig })
       .populate('products.product', 'name sku unitOfMeasure')
       .populate('completedBy', 'name email')
       .sort({ createdAt: -1 });
@@ -43,8 +48,8 @@ const getInternalTransfers = async (req, res) => {
 const getInternalTransfer = async (req, res) => {
   try {
     const internalTransfer = await InternalTransfer.findById(req.params.id)
-      .populate('sourceWarehouse', 'name location')
-      .populate('destinationWarehouse', 'name location')
+      .populate({ path: 'sourceWarehouse', ...transferWarehousePopulateConfig })
+      .populate({ path: 'destinationWarehouse', ...transferWarehousePopulateConfig })
       .populate('products.product', 'name sku unitOfMeasure category')
       .populate('completedBy', 'name email');
 
@@ -122,8 +127,8 @@ const createInternalTransfer = async (req, res) => {
 
     const createdInternalTransfer = await internalTransfer.save();
     const populatedInternalTransfer = await InternalTransfer.findById(createdInternalTransfer._id)
-      .populate('sourceWarehouse', 'name location')
-      .populate('destinationWarehouse', 'name location')
+      .populate({ path: 'sourceWarehouse', ...transferWarehousePopulateConfig })
+      .populate({ path: 'destinationWarehouse', ...transferWarehousePopulateConfig })
       .populate('products.product', 'name sku unitOfMeasure');
 
     return res.status(201).json({
@@ -219,8 +224,8 @@ const updateInternalTransfer = async (req, res) => {
 
     const updatedInternalTransfer = await internalTransfer.save();
     const populatedInternalTransfer = await InternalTransfer.findById(updatedInternalTransfer._id)
-      .populate('sourceWarehouse', 'name location')
-      .populate('destinationWarehouse', 'name location')
+      .populate({ path: 'sourceWarehouse', ...transferWarehousePopulateConfig })
+      .populate({ path: 'destinationWarehouse', ...transferWarehousePopulateConfig })
       .populate('products.product', 'name sku unitOfMeasure');
 
     return res.status(200).json({
@@ -417,8 +422,8 @@ const completeInternalTransfer = async (req, res) => {
     session.endSession();
 
     const completedInternalTransfer = await InternalTransfer.findById(internalTransfer._id)
-      .populate('sourceWarehouse', 'name location')
-      .populate('destinationWarehouse', 'name location')
+      .populate({ path: 'sourceWarehouse', ...transferWarehousePopulateConfig })
+      .populate({ path: 'destinationWarehouse', ...transferWarehousePopulateConfig })
       .populate('products.product', 'name sku unitOfMeasure')
       .populate('completedBy', 'name email');
 
@@ -467,8 +472,8 @@ const cancelInternalTransfer = async (req, res) => {
     const updatedInternalTransfer = await internalTransfer.save();
 
     const populatedInternalTransfer = await InternalTransfer.findById(updatedInternalTransfer._id)
-      .populate('sourceWarehouse', 'name location')
-      .populate('destinationWarehouse', 'name location')
+      .populate({ path: 'sourceWarehouse', ...transferWarehousePopulateConfig })
+      .populate({ path: 'destinationWarehouse', ...transferWarehousePopulateConfig })
       .populate('products.product', 'name sku unitOfMeasure');
 
     return res.status(200).json({

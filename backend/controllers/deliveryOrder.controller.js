@@ -4,6 +4,12 @@ const Warehouse = require('../models/warehouse.model');
 const StockLedger = require('../models/stockLedger.model');
 const mongoose = require('mongoose');
 
+const warehousePopulateConfig = {
+  path: 'warehouse',
+  select: 'name address isActive location',
+  populate: { path: 'location', select: 'name code' }
+};
+
 const getDeliveryOrders = async (req, res) => {
   try {
     const { status, warehouse, customer } = req.query;
@@ -20,7 +26,7 @@ const getDeliveryOrders = async (req, res) => {
     }
 
     const deliveryOrders = await DeliveryOrder.find(filter)
-      .populate('warehouse', 'name location')
+      .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure')
       .populate('validatedBy', 'name email')
       .sort({ createdAt: -1 });
@@ -42,7 +48,7 @@ const getDeliveryOrders = async (req, res) => {
 const getDeliveryOrder = async (req, res) => {
   try {
     const deliveryOrder = await DeliveryOrder.findById(req.params.id)
-      .populate('warehouse', 'name location')
+      .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure category')
       .populate('validatedBy', 'name email');
 
@@ -105,7 +111,7 @@ const createDeliveryOrder = async (req, res) => {
 
     const createdDeliveryOrder = await deliveryOrder.save();
     const populatedDeliveryOrder = await DeliveryOrder.findById(createdDeliveryOrder._id)
-      .populate('warehouse', 'name location')
+      .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure');
 
     return res.status(201).json({
@@ -179,7 +185,7 @@ const updateDeliveryOrder = async (req, res) => {
 
     const updatedDeliveryOrder = await deliveryOrder.save();
     const populatedDeliveryOrder = await DeliveryOrder.findById(updatedDeliveryOrder._id)
-      .populate('warehouse', 'name location')
+      .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure');
 
     return res.status(200).json({
@@ -349,7 +355,7 @@ const pickDeliveryOrder = async (req, res) => {
 
     const updatedDeliveryOrder = await deliveryOrder.save();
     const populatedDeliveryOrder = await DeliveryOrder.findById(updatedDeliveryOrder._id)
-      .populate('warehouse', 'name location')
+      .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure');
 
     return res.status(200).json({
@@ -425,7 +431,7 @@ const packDeliveryOrder = async (req, res) => {
 
     const updatedDeliveryOrder = await deliveryOrder.save();
     const populatedDeliveryOrder = await DeliveryOrder.findById(updatedDeliveryOrder._id)
-      .populate('warehouse', 'name location')
+      .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure');
 
     return res.status(200).json({
@@ -547,7 +553,7 @@ const validateDeliveryOrder = async (req, res) => {
     session.endSession();
 
     const validatedDeliveryOrder = await DeliveryOrder.findById(deliveryOrder._id)
-      .populate('warehouse', 'name location')
+      .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure')
       .populate('validatedBy', 'name email');
 
@@ -596,7 +602,7 @@ const cancelDeliveryOrder = async (req, res) => {
     const updatedDeliveryOrder = await deliveryOrder.save();
 
     const populatedDeliveryOrder = await DeliveryOrder.findById(updatedDeliveryOrder._id)
-      .populate('warehouse', 'name location')
+      .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure');
 
     return res.status(200).json({

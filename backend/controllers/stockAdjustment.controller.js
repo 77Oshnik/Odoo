@@ -21,7 +21,11 @@ const getStockAdjustments = async (req, res) => {
 
     const stockAdjustments = await StockAdjustment.find(filter)
       .populate('product', 'name sku unitOfMeasure')
-      .populate('warehouse', 'name location')
+      .populate({
+        path: 'warehouse',
+        select: 'name address isActive location',
+        populate: { path: 'location', select: 'name code' }
+      })
       .populate('adjustedBy', 'name email')
       .sort({ createdAt: -1 });
 
@@ -43,7 +47,11 @@ const getStockAdjustment = async (req, res) => {
   try {
     const stockAdjustment = await StockAdjustment.findById(req.params.id)
       .populate('product', 'name sku unitOfMeasure category')
-      .populate('warehouse', 'name location')
+      .populate({
+        path: 'warehouse',
+        select: 'name address isActive location',
+        populate: { path: 'location', select: 'name code' }
+      })
       .populate('adjustedBy', 'name email');
 
     if (!stockAdjustment) {
@@ -166,7 +174,11 @@ const createStockAdjustment = async (req, res) => {
 
     const populatedStockAdjustment = await StockAdjustment.findById(stockAdjustment._id)
       .populate('product', 'name sku unitOfMeasure')
-      .populate('warehouse', 'name location')
+      .populate({
+        path: 'warehouse',
+        select: 'name address isActive location',
+        populate: { path: 'location', select: 'name code' }
+      })
       .populate('adjustedBy', 'name email');
 
     return res.status(201).json({

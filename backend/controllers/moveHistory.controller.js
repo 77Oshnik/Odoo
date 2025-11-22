@@ -32,7 +32,11 @@ const getMoveHistory = async (req, res) => {
     const [moveHistory, total] = await Promise.all([
       StockLedger.find(filter)
         .populate('product', 'name sku unitOfMeasure')
-        .populate('warehouse', 'name location')
+        .populate({
+          path: 'warehouse',
+          select: 'name address isActive location',
+          populate: { path: 'location', select: 'name code' }
+        })
         .populate('performedBy', 'name email')
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -95,7 +99,11 @@ const getMoveHistoryByProduct = async (req, res) => {
     const [moveHistory, total] = await Promise.all([
       StockLedger.find(filter)
         .populate('product', 'name sku unitOfMeasure')
-        .populate('warehouse', 'name location')
+        .populate({
+          path: 'warehouse',
+          select: 'name address isActive location',
+          populate: { path: 'location', select: 'name code' }
+        })
         .populate('performedBy', 'name email')
         .sort({ createdAt: -1 })
         .skip(skip)

@@ -4,6 +4,12 @@ const Warehouse = require('../models/warehouse.model');
 const StockLedger = require('../models/stockLedger.model');
 const mongoose = require('mongoose');
 
+const warehousePopulateConfig = {
+  path: 'warehouse',
+  select: 'name address isActive location',
+  populate: { path: 'location', select: 'name code' }
+};
+
 /**
  * Get all receipts with optional filtering
  * Query params: status, warehouse, supplier
@@ -24,7 +30,7 @@ const getReceipts = async (req, res) => {
     }
 
     const receipts = await Receipt.find(filter)
-      .populate('warehouse', 'name location')
+  .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure')
       .populate('validatedBy', 'name email')
       .sort({ createdAt: -1 });
@@ -49,7 +55,7 @@ const getReceipts = async (req, res) => {
 const getReceipt = async (req, res) => {
   try {
     const receipt = await Receipt.findById(req.params.id)
-      .populate('warehouse', 'name location')
+  .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure category')
       .populate('validatedBy', 'name email');
 
@@ -117,7 +123,7 @@ const createReceipt = async (req, res) => {
 
     const createdReceipt = await receipt.save();
     const populatedReceipt = await Receipt.findById(createdReceipt._id)
-      .populate('warehouse', 'name location')
+      .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure');
 
     return res.status(201).json({
@@ -198,7 +204,7 @@ const updateReceipt = async (req, res) => {
 
     const updatedReceipt = await receipt.save();
     const populatedReceipt = await Receipt.findById(updatedReceipt._id)
-      .populate('warehouse', 'name location')
+      .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure');
 
     return res.status(200).json({
@@ -377,7 +383,7 @@ const validateReceipt = async (req, res) => {
 
     // Populate and return updated receipt
     const validatedReceipt = await Receipt.findById(receipt._id)
-      .populate('warehouse', 'name location')
+      .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure')
       .populate('validatedBy', 'name email');
 
@@ -431,7 +437,7 @@ const cancelReceipt = async (req, res) => {
     const updatedReceipt = await receipt.save();
 
     const populatedReceipt = await Receipt.findById(updatedReceipt._id)
-      .populate('warehouse', 'name location')
+      .populate(warehousePopulateConfig)
       .populate('products.product', 'name sku unitOfMeasure');
 
     return res.status(200).json({
