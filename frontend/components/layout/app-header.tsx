@@ -65,7 +65,6 @@ export const AppHeader = () => {
       items: [
         { label: 'Products', href: '/products' },
         { label: 'Categories', href: '/categories' },
-        { label: 'Reordering Rules', href: '/reordering-rules' }
       ]
     },
     {
@@ -95,11 +94,9 @@ export const AppHeader = () => {
               {navConfig.map((item) => (
                 <NavigationMenuItem key={item.label}>
                   {item.type === 'link' ? (
-                    <Link href={item.href}>
-                      <NavigationMenuLink active={pathname === item.href}>
-                        {item.label}
-                      </NavigationMenuLink>
-                    </Link>
+                    <NavigationMenuLink asChild active={pathname === item.href}>
+                      <Link href={item.href}>{item.label}</Link>
+                    </NavigationMenuLink>
                   ) : (
                     <>
                       <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
@@ -107,11 +104,9 @@ export const AppHeader = () => {
                         <ul className="grid gap-2 rounded-md bg-white p-2 shadow-md md:w-56">
                           {item.items.map((subItem) => (
                             <li key={subItem.href}>
-                              <Link href={subItem.href}>
-                                <NavigationMenuLink active={pathname.startsWith(subItem.href)}>
-                                  {subItem.label}
-                                </NavigationMenuLink>
-                              </Link>
+                              <NavigationMenuLink asChild active={pathname.startsWith(subItem.href)}>
+                                <Link href={subItem.href}>{subItem.label}</Link>
+                              </NavigationMenuLink>
                             </li>
                           ))}
                         </ul>
