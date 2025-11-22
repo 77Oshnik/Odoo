@@ -95,7 +95,7 @@ export const AppHeader = () => {
               {navConfig.map((item) => (
                 <NavigationMenuItem key={item.label}>
                   {item.type === 'link' ? (
-                    <Link href={item.href} passHref legacyBehavior>
+                    <Link href={item.href}>
                       <NavigationMenuLink active={pathname === item.href}>
                         {item.label}
                       </NavigationMenuLink>
@@ -107,7 +107,7 @@ export const AppHeader = () => {
                         <ul className="grid gap-2 rounded-md bg-white p-2 shadow-md md:w-56">
                           {item.items.map((subItem) => (
                             <li key={subItem.href}>
-                              <Link href={subItem.href} passHref legacyBehavior>
+                              <Link href={subItem.href}>
                                 <NavigationMenuLink active={pathname.startsWith(subItem.href)}>
                                   {subItem.label}
                                 </NavigationMenuLink>

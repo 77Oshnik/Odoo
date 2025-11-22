@@ -11,6 +11,7 @@ const deliveryOrderRoutes = require('./routes/deliveryOrder.routes');
 const internalTransferRoutes = require('./routes/internalTransfer.routes');
 const stockAdjustmentRoutes = require('./routes/stockAdjustment.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const locationRoutes = require('./routes/location.routes');
 const cors = require('cors');
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/warehouses', warehouseRoutes);
+app.use('/api/locations', locationRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/delivery-orders', deliveryOrderRoutes);
 app.use('/api/internal-transfers', internalTransferRoutes);

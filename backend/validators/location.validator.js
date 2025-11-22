@@ -2,25 +2,25 @@ const { body, param } = require('express-validator');
 
 const mongoIdMessage = 'Valid MongoDB ObjectId is required';
 
-const createWarehouseValidator = [
+const createLocationValidator = [
   body('name').trim().notEmpty().withMessage('Name is required'),
-  body('location').notEmpty().withMessage('Location is required').bail().isMongoId().withMessage(mongoIdMessage),
-  body('address').optional().trim(),
+  body('code').trim().notEmpty().withMessage('Code is required'),
+  body('description').optional().trim(),
   body('isActive').optional().isBoolean().withMessage('isActive must be a boolean')
 ];
 
-const updateWarehouseValidator = [
+const updateLocationValidator = [
   param('id').isMongoId().withMessage(mongoIdMessage),
   body('name').optional().trim().notEmpty().withMessage('Name cannot be empty'),
-  body('location').optional().isMongoId().withMessage(mongoIdMessage),
-  body('address').optional().trim(),
+  body('code').optional().trim().notEmpty().withMessage('Code cannot be empty'),
+  body('description').optional().trim(),
   body('isActive').optional().isBoolean().withMessage('isActive must be a boolean')
 ];
 
-const warehouseIdValidator = [param('id').isMongoId().withMessage(mongoIdMessage)];
+const locationIdValidator = [param('id').isMongoId().withMessage(mongoIdMessage)];
 
 module.exports = {
-  createWarehouseValidator,
-  updateWarehouseValidator,
-  warehouseIdValidator
+  createLocationValidator,
+  updateLocationValidator,
+  locationIdValidator
 };
