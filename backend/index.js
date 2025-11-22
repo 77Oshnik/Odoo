@@ -9,6 +9,7 @@ const warehouseRoutes = require('./routes/warehouse.routes');
 const receiptRoutes = require('./routes/receipt.routes');
 const deliveryOrderRoutes = require('./routes/deliveryOrder.routes');
 const internalTransferRoutes = require('./routes/internalTransfer.routes');
+const stockAdjustmentRoutes = require('./routes/stockAdjustment.routes');
 const cors = require('cors');
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/warehouses', warehouseRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/delivery-orders', deliveryOrderRoutes);
 app.use('/api/internal-transfers', internalTransferRoutes);
+app.use('/api/stock-adjustments', stockAdjustmentRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello World from Express!');
