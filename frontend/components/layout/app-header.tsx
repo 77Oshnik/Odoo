@@ -1,114 +1,130 @@
-'use client';
+"use client"
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import { useMemo } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 import {
   NavigationMenu,
   NavigationMenuList,
   NavigationMenuItem,
   NavigationMenuTrigger,
   NavigationMenuContent,
-  NavigationMenuLink
-} from '@/components/ui/navigation-menu';
-import { logout } from '@/lib/features/auth/authSlice';
-import { AppDispatch, RootState } from '@/lib/store';
+  NavigationMenuLink,
+} from "@/components/ui/navigation-menu"
+import { logout } from "@/lib/features/auth/authSlice"
+import type { AppDispatch, RootState } from "@/lib/store"
 
 const formatSegment = (segment: string) =>
   segment
-    .split('-')
+    .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
+    .join(" ")
 
 export const AppHeader = () => {
-  const pathname = usePathname();
-  const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const pathname = usePathname()
+  const router = useRouter()
+  const dispatch = useDispatch<AppDispatch>()
+  const { user } = useSelector((state: RootState) => state.auth)
 
   const breadcrumbs = useMemo(() => {
-    const segments = pathname.split('/').filter(Boolean);
+    const segments = pathname.split("/").filter(Boolean)
     const items = segments.map((segment, index) => ({
       label: formatSegment(segment),
-      href: `/${segments.slice(0, index + 1).join('/')}`,
-      isCurrent: index === segments.length - 1
-    }));
-    return items.length ? items : [{ label: 'Dashboard', href: '/dashboard', isCurrent: true }];
-  }, [pathname]);
+      href: `/${segments.slice(0, index + 1).join("/")}`,
+      isCurrent: index === segments.length - 1,
+    }))
+    return items.length ? items : [{ label: "Dashboard", href: "/dashboard", isCurrent: true }]
+  }, [pathname])
 
   const handleLogout = async () => {
-    await dispatch(logout());
-    router.replace('/login');
-  };
+    await dispatch(logout())
+    router.replace("/login")
+  }
 
   const navConfig = [
     {
-      type: 'link' as const,
-      label: 'Dashboard',
-      href: '/dashboard'
+      type: "link" as const,
+      label: "Dashboard",
+      href: "/dashboard",
     },
     {
-      type: 'menu' as const,
-      label: 'Operations',
+      type: "menu" as const,
+      label: "Operations",
       items: [
-        { label: 'Receipts', href: '/receipts' },
-        { label: 'Delivery Orders', href: '/delivery-orders' },
-        { label: 'Stock Adjustments', href: '/stock-adjustments' }
-      ]
+        { label: "Receipts", href: "/receipts" },
+        { label: "Delivery Orders", href: "/delivery-orders" },
+        { label: "Stock Adjustments", href: "/stock-adjustments" },
+      ],
     },
     {
-      type: 'menu' as const,
-      label: 'Stock',
+      type: "menu" as const,
+      label: "Stock",
       items: [
-        { label: 'Products', href: '/products' },
-        { label: 'Categories', href: '/categories' },
-        { label: 'Reordering Rules', href: '/reordering-rules' }
-      ]
+        { label: "Products", href: "/products" },
+        { label: "Categories", href: "/categories" },
+        { label: "Reordering Rules", href: "/reordering-rules" },
+      ],
     },
     {
-      type: 'link' as const,
-      label: 'Move History',
-      href: '/stock-ledger'
+      type: "link" as const,
+      label: "Move History",
+      href: "/stock-ledger",
     },
     {
-      type: 'menu' as const,
-      label: 'Settings',
+      type: "menu" as const,
+      label: "Settings",
       items: [
-        { label: 'Warehouses', href: '/warehouses' },
-        { label: 'Locations', href: '/locations' }
-      ]
-    }
-  ];
+        { label: "Warehouses", href: "/warehouses" },
+        { label: "Locations", href: "/locations" },
+      ],
+    },
+  ]
 
   return (
-    <header className="border-b bg-white/80 backdrop-blur-sm">
+    <header className="border-b border-white/10 bg-[#030303] backdrop-blur-xl">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="text-lg font-semibold tracking-tight text-slate-900">
+          <Link href="/dashboard" className="text-lg font-bold tracking-tight text-indigo-400">
             StockMaster
           </Link>
           <NavigationMenu className="flex-1">
             <NavigationMenuList className="justify-start gap-2">
               {navConfig.map((item) => (
                 <NavigationMenuItem key={item.label}>
-                  {item.type === 'link' ? (
+                  {item.type === "link" ? (
                     <Link href={item.href}>
-                      <NavigationMenuLink active={pathname === item.href}>
+                      <NavigationMenuLink
+                        active={pathname === item.href}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          pathname === item.href
+                            ? "bg-white/10 text-white"
+                            : "text-white/60 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
                         {item.label}
                       </NavigationMenuLink>
                     </Link>
                   ) : (
                     <>
-                      <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="grid gap-2 rounded-md bg-white p-2 shadow-md md:w-56">
+                      <NavigationMenuTrigger className="px-3 py-2 rounded-lg text-sm font-medium text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/10 data-[state=open]:bg-indigo-500/20 data-[state=open]:text-indigo-200 transition-all duration-200">
+                        {item.label}
+                      </NavigationMenuTrigger>
+                      <NavigationMenuContent className="relative z-50">
+                        <ul className="grid gap-2 rounded-lg bg-white/5 backdrop-blur-xl border border-white/10 p-3 shadow-2xl md:w-56">
                           {item.items.map((subItem) => (
                             <li key={subItem.href}>
                               <Link href={subItem.href}>
-                                <NavigationMenuLink active={pathname.startsWith(subItem.href)}>
+                                <NavigationMenuLink
+                                  active={pathname.startsWith(subItem.href)}
+                                  className={`block px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                                    pathname.startsWith(subItem.href)
+                                      ? "bg-indigo-500/20 text-indigo-200"
+                                      : "text-white/60 hover:text-white hover:bg-white/10"
+                                  }`}
+                                >
                                   {subItem.label}
                                 </NavigationMenuLink>
                               </Link>
@@ -123,22 +139,25 @@ export const AppHeader = () => {
             </NavigationMenuList>
           </NavigationMenu>
         </div>
-        <div className="flex items-center gap-3 text-sm text-slate-500">
-          {user && <span className="hidden sm:inline">{user.email}</span>}
-          <Button variant="outline" size="sm" onClick={handleLogout} className="border-slate-200">
+        <div className="flex items-center gap-3 text-sm">
+          {user && <span className="hidden sm:inline text-white/60">{user.email}</span>}
+          <Button
+            onClick={handleLogout}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white border-0 font-medium transition-all duration-200"
+          >
             Logout
           </Button>
         </div>
       </div>
-      <div className="border-t px-4 py-2 text-sm text-slate-500 sm:px-6">
+      <div className="border-t border-white/10 px-4 py-2 text-sm bg-white/5 backdrop-blur-sm sm:px-6">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2">
           {breadcrumbs.map((crumb, index) => (
             <div key={crumb.href} className="flex items-center gap-2">
-              {index > 0 && <Separator orientation="vertical" className="h-4" />}
+              {index > 0 && <Separator orientation="vertical" className="h-4 bg-white/20" />}
               {crumb.isCurrent ? (
-                <span className="font-medium text-slate-900">{crumb.label}</span>
+                <span className="font-medium text-white">{crumb.label}</span>
               ) : (
-                <Link href={crumb.href} className="transition-colors hover:text-slate-900">
+                <Link href={crumb.href} className="text-white/60 transition-colors hover:text-indigo-400">
                   {crumb.label}
                 </Link>
               )}
@@ -147,5 +166,5 @@ export const AppHeader = () => {
         </nav>
       </div>
     </header>
-  );
-};
+  )
+}
