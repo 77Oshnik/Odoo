@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Odoo Clone",
+  title: "Stock Management",
   description: "Manage your business efficiently",
 };
 
