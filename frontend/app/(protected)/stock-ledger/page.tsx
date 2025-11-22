@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table';
 import api from '@/lib/axios';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const transactionTypeOptions = [
   { value: 'receipt', label: 'Receipt' },
@@ -169,6 +170,14 @@ const initialFilters = {
   endDate: ''
 };
 
+const panelClassName = 'rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-lg';
+const selectTriggerClassName = 'border-white/10 bg-black/40 text-white hover:bg-white/10 focus:ring-0 focus-visible:ring-indigo-500 focus-visible:ring-offset-0';
+const selectContentClassName = 'border-white/10 bg-[#111111] text-white shadow-2xl backdrop-blur-xl';
+const selectItemClassName = 'text-white/80 focus:bg-white/10 focus:text-white data-[state=checked]:bg-indigo-500/20 data-[state=checked]:text-white';
+const inputClassName = 'border-white/10 bg-black/40 text-white placeholder:text-white/40 focus-visible:ring-indigo-500 focus-visible:ring-offset-0';
+const subtleButtonClassName = 'border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white';
+const badgeClassName = 'border border-indigo-500/20 bg-indigo-500/10 text-indigo-200';
+
 const StockLedgerPage = () => {
   const [filters, setFilters] = useState(initialFilters);
   const [moveHistory, setMoveHistory] = useState<MoveHistoryRecord[]>([]);
@@ -294,235 +303,262 @@ const StockLedgerPage = () => {
   const emptyState = useMemo(() => !isLoading && moveHistory.length === 0, [isLoading, moveHistory.length]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Move History</h1>
-          <p className="text-sm text-slate-600">
-            Review stock movements across warehouses with full traceability.
-          </p>
+    <div className="relative min-h-screen bg-[#030303] overflow-hidden">
+      <div className="relative z-10 flex flex-col gap-8 px-4 py-12 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-white">Move History</h1>
+            <p className="text-sm text-white/60">
+              Review stock movements across warehouses with full traceability.
+            </p>
+          </div>
         </div>
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-          <CardDescription>Refine results by product, warehouse, transaction type, or dates.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <div className="space-y-2">
-              <Label>Product</Label>
-              <Select
-                value={filters.product || 'all'}
-                onValueChange={(value) => handleFilterChange('product', value === 'all' ? '' : value)}
+        <Card className={panelClassName}>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-white">Filters</CardTitle>
+            <CardDescription className="text-white/60">
+              Refine results by product, warehouse, transaction type, or dates.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6 text-white/80">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-white/70">Product</Label>
+                <Select
+                  value={filters.product || 'all'}
+                  onValueChange={(value) => handleFilterChange('product', value === 'all' ? '' : value)}
+                >
+                  <SelectTrigger className={cn('w-full justify-between', selectTriggerClassName)}>
+                    <SelectValue placeholder="All products" />
+                  </SelectTrigger>
+                  <SelectContent className={selectContentClassName}>
+                    <SelectItem className={selectItemClassName} value="all">All products</SelectItem>
+                    {products.map((product) => (
+                      <SelectItem className={selectItemClassName} key={product.id} value={product.id}>
+                        {product.name}{product.sku ? ` (${product.sku})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-white/70">Warehouse</Label>
+                <Select
+                  value={filters.warehouse || 'all'}
+                  onValueChange={(value) => handleFilterChange('warehouse', value === 'all' ? '' : value)}
+                >
+                  <SelectTrigger className={cn('w-full justify-between', selectTriggerClassName)}>
+                    <SelectValue placeholder="All warehouses" />
+                  </SelectTrigger>
+                  <SelectContent className={selectContentClassName}>
+                    <SelectItem className={selectItemClassName} value="all">All warehouses</SelectItem>
+                    {warehouses.map((warehouse) => (
+                      <SelectItem className={selectItemClassName} key={warehouse.id} value={warehouse.id}>
+                        {warehouse.name}
+                        {warehouse.location?.name ? ` • ${warehouse.location.name}` : ''}
+                        {warehouse.location?.code ? ` (${warehouse.location.code})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-white/70">Transaction Type</Label>
+                <Select
+                  value={filters.transactionType || 'all'}
+                  onValueChange={(value) => handleFilterChange('transactionType', value === 'all' ? '' : value)}
+                >
+                  <SelectTrigger className={cn('w-full justify-between', selectTriggerClassName)}>
+                    <SelectValue placeholder="All types" />
+                  </SelectTrigger>
+                  <SelectContent className={selectContentClassName}>
+                    <SelectItem className={selectItemClassName} value="all">All types</SelectItem>
+                    {transactionTypeOptions.map((option) => (
+                      <SelectItem className={selectItemClassName} key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-white/70" htmlFor="startDate">Start Date</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={filters.startDate}
+                  onChange={(event) => handleFilterChange('startDate', event.target.value)}
+                  className={inputClassName}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-white/70" htmlFor="endDate">End Date</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={filters.endDate}
+                  onChange={(event) => handleFilterChange('endDate', event.target.value)}
+                  className={inputClassName}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Label className="text-sm font-medium text-white/70">Rows per page</Label>
+                <Select value={String(limit)} onValueChange={(value) => handleLimitChange(Number(value))}>
+                  <SelectTrigger className={cn('w-[110px] justify-between', selectTriggerClassName)}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={selectContentClassName}>
+                    {pageSizeOptions.map((option) => (
+                      <SelectItem className={selectItemClassName} key={option.value} value={String(option.value)}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleResetFilters}
+                disabled={isLoading}
+                className={subtleButtonClassName}
               >
-                <SelectTrigger className="w-full justify-between">
-                  <SelectValue placeholder="All products" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All products</SelectItem>
-                  {products.map((product) => (
-                    <SelectItem key={product.id} value={product.id}>
-                      {product.name}{product.sku ? ` (${product.sku})` : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                Reset filters
+              </Button>
             </div>
+          </CardContent>
+        </Card>
 
-            <div className="space-y-2">
-              <Label>Warehouse</Label>
-              <Select
-                value={filters.warehouse || 'all'}
-                onValueChange={(value) => handleFilterChange('warehouse', value === 'all' ? '' : value)}
-              >
-                <SelectTrigger className="w-full justify-between">
-                  <SelectValue placeholder="All warehouses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All warehouses</SelectItem>
-                  {warehouses.map((warehouse) => (
-                    <SelectItem key={warehouse.id} value={warehouse.id}>
-                      {warehouse.name}
-                      {warehouse.location?.name ? ` • ${warehouse.location.name}` : ''}
-                      {warehouse.location?.code ? ` (${warehouse.location.code})` : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Transaction Type</Label>
-              <Select
-                value={filters.transactionType || 'all'}
-                onValueChange={(value) => handleFilterChange('transactionType', value === 'all' ? '' : value)}
-              >
-                <SelectTrigger className="w-full justify-between">
-                  <SelectValue placeholder="All types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All types</SelectItem>
-                  {transactionTypeOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="startDate">Start Date</Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={filters.startDate}
-                onChange={(event) => handleFilterChange('startDate', event.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="endDate">End Date</Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={filters.endDate}
-                onChange={(event) => handleFilterChange('endDate', event.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Label className="text-sm font-medium">Rows per page</Label>
-              <Select value={String(limit)} onValueChange={(value) => handleLimitChange(Number(value))}>
-                <SelectTrigger className="w-[100px] justify-between">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {pageSizeOptions.map((option) => (
-                    <SelectItem key={option.value} value={String(option.value)}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button variant="outline" onClick={handleResetFilters} disabled={isLoading}>
-              Reset filters
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Movement History</CardTitle>
-          <CardDescription>
-            {total ? `${total.toLocaleString()} movements found.` : 'Review all recorded stock movements.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <p className="text-sm text-slate-500">Loading move history…</p>
-          ) : emptyState ? (
-            <p className="text-sm text-slate-500">No move history records match your filters.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Warehouse</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="text-right">Quantity</TableHead>
-                    <TableHead className="text-right">Balance</TableHead>
-                    <TableHead>Reference</TableHead>
-                    <TableHead>Performed By</TableHead>
-                    <TableHead>Notes</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {moveHistory.map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell>{formatDateTime(record.createdAt)}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{record.product?.name || 'Unknown product'}</span>
-                          {record.product?.sku && (
-                            <span className="text-xs text-slate-500">SKU: {record.product.sku}</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span>{record.warehouse?.name || 'Unknown warehouse'}</span>
-                          {record.warehouse?.location && (
-                            <span className="text-xs text-slate-500">
-                              {record.warehouse.location.name || 'Unnamed location'}
-                              {record.warehouse.location.code ? ` (${record.warehouse.location.code})` : ''}
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{formatTransactionType(record.transactionType)}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span className={record.quantityChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
-                          {record.quantityChange >= 0 ? '+' : ''}
-                          {record.quantityChange.toLocaleString()}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">{record.balanceAfter.toLocaleString()}</TableCell>
-                      <TableCell>
-                        {record.referenceDocument?.documentNumber ? (
+        <Card className={cn(panelClassName, 'overflow-hidden')}>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-white">Movement History</CardTitle>
+            <CardDescription className="text-white/60">
+              {total ? `${total.toLocaleString()} movements found.` : 'Review all recorded stock movements.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-white/80">
+            {isLoading ? (
+              <p className="text-sm text-white/60">Loading move history…</p>
+            ) : emptyState ? (
+              <p className="text-sm text-white/60">No move history records match your filters.</p>
+            ) : (
+              <div className="overflow-x-auto rounded-lg border border-white/10">
+                <Table className="min-w-full text-white/80">
+                  <TableHeader>
+                    <TableRow className="border-white/10 bg-white/5">
+                      <TableHead className="text-white/70">Date</TableHead>
+                      <TableHead className="text-white/70">Product</TableHead>
+                      <TableHead className="text-white/70">Warehouse</TableHead>
+                      <TableHead className="text-white/70">Type</TableHead>
+                      <TableHead className="text-right text-white/70">Quantity</TableHead>
+                      <TableHead className="text-right text-white/70">Balance</TableHead>
+                      <TableHead className="text-white/70">Reference</TableHead>
+                      <TableHead className="text-white/70">Performed By</TableHead>
+                      <TableHead className="text-white/70">Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {moveHistory.map((record) => (
+                      <TableRow key={record.id} className="border-white/5 hover:bg-white/10">
+                        <TableCell className="align-top text-white/80">{formatDateTime(record.createdAt)}</TableCell>
+                        <TableCell className="align-top text-white">
                           <div className="flex flex-col">
-                            <span>{record.referenceDocument.documentNumber}</span>
-                            {record.referenceDocument.documentType && (
-                              <span className="text-xs text-slate-500">
-                                {formatDocumentType(record.referenceDocument.documentType)}
+                            <span className="font-medium text-white">
+                              {record.product?.name || 'Unknown product'}
+                            </span>
+                            {record.product?.sku && (
+                              <span className="text-xs text-white/50">SKU: {record.product.sku}</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="align-top text-white">
+                          <div className="flex flex-col">
+                            <span>{record.warehouse?.name || 'Unknown warehouse'}</span>
+                            {record.warehouse?.location && (
+                              <span className="text-xs text-white/50">
+                                {record.warehouse.location.name || 'Unnamed location'}
+                                {record.warehouse.location.code ? ` (${record.warehouse.location.code})` : ''}
                               </span>
                             )}
                           </div>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {record.performedBy?.name || record.performedBy?.email || 'System'}
-                        {record.performedBy?.email && record.performedBy.name && (
-                          <span className="block text-xs text-slate-500">{record.performedBy.email}</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="max-w-[220px] truncate">
-                        {record.notes || <span className="text-slate-400">—</span>}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+                        </TableCell>
+                        <TableCell className="align-top">
+                          <Badge className={badgeClassName} variant="secondary">
+                            {formatTransactionType(record.transactionType)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="align-top text-right">
+                          <span className={record.quantityChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                            {record.quantityChange >= 0 ? '+' : ''}
+                            {record.quantityChange.toLocaleString()}
+                          </span>
+                        </TableCell>
+                        <TableCell className="align-top text-right text-white">
+                          {record.balanceAfter.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="align-top text-white">
+                          {record.referenceDocument?.documentNumber ? (
+                            <div className="flex flex-col">
+                              <span>{record.referenceDocument.documentNumber}</span>
+                              {record.referenceDocument.documentType && (
+                                <span className="text-xs text-white/50">
+                                  {formatDocumentType(record.referenceDocument.documentType)}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-white/40">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="align-top text-white">
+                          {record.performedBy?.name || record.performedBy?.email || 'System'}
+                          {record.performedBy?.email && record.performedBy.name && (
+                            <span className="block text-xs text-white/50">{record.performedBy.email}</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="align-top max-w-[220px] truncate text-white/80">
+                          {record.notes || <span className="text-white/40">—</span>}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
 
-          <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <p className="text-sm text-slate-500">
-              Page {page} of {pages} • {total.toLocaleString()} total records
-            </p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => setPage((prev) => Math.max(prev - 1, 1))} disabled={!canGoPrev || isLoading}>
-                Previous
-              </Button>
-              <Button variant="outline" onClick={() => setPage((prev) => Math.min(prev + 1, pages))} disabled={!canGoNext || isLoading}>
-                Next
-              </Button>
+            <div className="mt-6 flex flex-col gap-3 text-white/70 md:flex-row md:items-center md:justify-between">
+              <p className="text-sm text-white/60">
+                Page {page} of {pages} • {total.toLocaleString()} total records
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={!canGoPrev || isLoading}
+                  className={subtleButtonClassName}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage((prev) => Math.min(prev + 1, pages))}
+                  disabled={!canGoNext || isLoading}
+                  className={subtleButtonClassName}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
