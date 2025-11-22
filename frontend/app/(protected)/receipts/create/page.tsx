@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { useRouter } from "next/navigation"
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 import { ArrowLeft, Plus, Trash2, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import type { AppDispatch, RootState } from "@/lib/store"
@@ -16,8 +17,39 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import type { Warehouse, Product, ReceiptFormValues } from "@/types" // Import Warehouse, Product, and ReceiptFormValues
-import { receiptSchema } from "@/schemas" // Import receiptSchema
+
+// Define types inline
+interface Warehouse {
+  id: string
+  _id?: string
+  name: string
+  location: string
+}
+
+interface Product {
+  id: string
+  _id?: string
+  name: string
+  sku: string
+  unitOfMeasure: string
+}
+
+// Define schema inline
+const receiptSchema = z.object({
+  supplier: z.string().optional(),
+  warehouse: z.string().min(1, "Warehouse is required"),
+  receivedDate: z.string().optional(),
+  notes: z.string().optional(),
+  products: z.array(
+    z.object({
+      product: z.string().min(1, "Product is required"),
+      quantityReceived: z.coerce.number().min(1, "Quantity must be at least 1"),
+      unitPrice: z.coerce.number().optional(),
+    })
+  ).min(1, "At least one product is required"),
+})
+
+type ReceiptFormValues = z.infer<typeof receiptSchema>
 
 export default function CreateReceiptPage() {
   const dispatch = useDispatch<AppDispatch>()

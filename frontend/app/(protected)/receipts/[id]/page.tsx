@@ -99,7 +99,7 @@ export default function ReceiptDetailsPage() {
     if (isLoading || !currentReceipt) {
         return (
             <div className="flex h-96 items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
             </div>
         );
     }
@@ -107,15 +107,15 @@ export default function ReceiptDetailsPage() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'draft':
-                return <Badge variant="secondary" className="bg-slate-100 text-slate-700"><Clock className="mr-1 h-3 w-3" /> Draft</Badge>;
+                return <Badge variant="secondary" className="bg-slate-500/20 text-slate-200"><Clock className="mr-1 h-3 w-3" /> Draft</Badge>;
             case 'ready':
-                return <Badge variant="secondary" className="bg-blue-100 text-blue-700"><AlertCircle className="mr-1 h-3 w-3" /> Ready</Badge>;
+                return <Badge variant="secondary" className="bg-blue-500/20 text-blue-200"><AlertCircle className="mr-1 h-3 w-3" /> Ready</Badge>;
             case 'done':
-                return <Badge variant="secondary" className="bg-emerald-100 text-emerald-700"><CheckCircle className="mr-1 h-3 w-3" /> Done</Badge>;
+                return <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-200"><CheckCircle className="mr-1 h-3 w-3" /> Done</Badge>;
             case 'canceled':
-                return <Badge variant="secondary" className="bg-red-100 text-red-700"><XCircle className="mr-1 h-3 w-3" /> Canceled</Badge>;
+                return <Badge variant="secondary" className="bg-red-500/20 text-red-200"><XCircle className="mr-1 h-3 w-3" /> Canceled</Badge>;
             default:
-                return <Badge variant="outline">{status}</Badge>;
+                return <Badge variant="outline" className="border-white/20 text-white/60">{status}</Badge>;
         }
     };
 
@@ -124,17 +124,17 @@ export default function ReceiptDetailsPage() {
             {/* Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                    <Button variant="ghost" size="icon" className="text-white/60 hover:text-white hover:bg-white/10" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                            <h1 className="text-2xl font-bold tracking-tight text-white">
                                 {currentReceipt.receiptNumber}
                             </h1>
                             {getStatusBadge(currentReceipt.status)}
                         </div>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-sm text-white/60">
                             Created on {format(new Date(currentReceipt.createdAt), 'PPP')}
                         </p>
                     </div>
@@ -182,7 +182,7 @@ export default function ReceiptDetailsPage() {
                                     <AlertDialogHeader>
                                         <AlertDialogTitle>Validate Receipt?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            This will update stock levels in <strong>{currentReceipt.warehouse.name}</strong>. This action cannot be undone.
+                                            This will update stock levels in <strong>{typeof currentReceipt.warehouse === 'object' ? currentReceipt.warehouse.name : 'the selected warehouse'}</strong>. This action cannot be undone.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
@@ -202,27 +202,31 @@ export default function ReceiptDetailsPage() {
             <div className="grid gap-6 md:grid-cols-3">
                 {/* Main Content */}
                 <div className="space-y-6 md:col-span-2">
-                    <Card>
+                    <Card className="bg-white/5 backdrop-blur-xl border border-white/10">
                         <CardHeader>
-                            <CardTitle>Products</CardTitle>
-                            <CardDescription>Items included in this receipt.</CardDescription>
+                            <CardTitle className="text-white">Products</CardTitle>
+                            <CardDescription className="text-white/60">Items included in this receipt.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Product</TableHead>
-                                        <TableHead>SKU</TableHead>
-                                        <TableHead className="text-right">Quantity</TableHead>
+                                    <TableRow className="border-white/10 hover:bg-transparent">
+                                        <TableHead className="text-white/70">Product</TableHead>
+                                        <TableHead className="text-white/70">SKU</TableHead>
+                                        <TableHead className="text-right text-white/70">Quantity</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {currentReceipt.products.map((item) => (
-                                        <TableRow key={item.product._id}>
-                                            <TableCell className="font-medium">{item.product.name}</TableCell>
-                                            <TableCell className="text-slate-500">{item.product.sku}</TableCell>
-                                            <TableCell className="text-right">
-                                                {item.quantityReceived} {item.product.unitOfMeasure}
+                                    {currentReceipt.products.map((item, index) => (
+                                        <TableRow key={typeof item.product === 'object' ? item.product._id : index} className="border-white/10">
+                                            <TableCell className="font-medium text-white">
+                                                {typeof item.product === 'object' ? item.product.name : 'Unknown Product'}
+                                            </TableCell>
+                                            <TableCell className="text-white/60">
+                                                {typeof item.product === 'object' ? item.product.sku : 'N/A'}
+                                            </TableCell>
+                                            <TableCell className="text-right text-white">
+                                                {item.quantityReceived} {typeof item.product === 'object' ? item.product.unitOfMeasure : 'units'}
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -232,12 +236,12 @@ export default function ReceiptDetailsPage() {
                     </Card>
 
                     {currentReceipt.notes && (
-                        <Card>
+                        <Card className="bg-white/5 backdrop-blur-xl border border-white/10">
                             <CardHeader>
-                                <CardTitle>Notes</CardTitle>
+                                <CardTitle className="text-white">Notes</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-slate-600 whitespace-pre-wrap">{currentReceipt.notes}</p>
+                                <p className="text-sm text-white/80 whitespace-pre-wrap">{currentReceipt.notes}</p>
                             </CardContent>
                         </Card>
                     )}
@@ -245,39 +249,47 @@ export default function ReceiptDetailsPage() {
 
                 {/* Sidebar */}
                 <div className="space-y-6">
-                    <Card>
+                    <Card className="bg-white/5 backdrop-blur-xl border border-white/10">
                         <CardHeader>
-                            <CardTitle>Details</CardTitle>
+                            <CardTitle className="text-white">Details</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <p className="text-xs font-medium text-slate-500 uppercase">Warehouse</p>
+                                <p className="text-xs font-medium text-white/50 uppercase">Warehouse</p>
                                 <div className="mt-1 flex items-start gap-2">
-                                    <MapPin className="mt-0.5 h-4 w-4 text-slate-400" />
+                                    <MapPin className="mt-0.5 h-4 w-4 text-white/40" />
                                     <div>
-                                        <p className="font-medium">{currentReceipt.warehouse.name}</p>
-                                        <p className="text-xs text-slate-500">{currentReceipt.warehouse.location}</p>
+                                        <p className="font-medium text-white">
+                                            {typeof currentReceipt.warehouse === 'object' ? currentReceipt.warehouse.name : 'Unknown Warehouse'}
+                                        </p>
+                                        <p className="text-xs text-white/60">
+                                            {typeof currentReceipt.warehouse === 'object' && currentReceipt.warehouse.location
+                                                ? (typeof currentReceipt.warehouse.location === 'object'
+                                                    ? currentReceipt.warehouse.location.name
+                                                    : currentReceipt.warehouse.location)
+                                                : 'N/A'}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <Separator />
+                            <Separator className="bg-white/10" />
 
                             <div>
-                                <p className="text-xs font-medium text-slate-500 uppercase">Supplier</p>
+                                <p className="text-xs font-medium text-white/50 uppercase">Supplier</p>
                                 <div className="mt-1 flex items-center gap-2">
-                                    <User className="h-4 w-4 text-slate-400" />
-                                    <p className="font-medium">{currentReceipt.supplier || 'N/A'}</p>
+                                    <User className="h-4 w-4 text-white/40" />
+                                    <p className="font-medium text-white">{currentReceipt.supplier || 'N/A'}</p>
                                 </div>
                             </div>
 
-                            <Separator />
+                            <Separator className="bg-white/10" />
 
                             <div>
-                                <p className="text-xs font-medium text-slate-500 uppercase">Received Date</p>
+                                <p className="text-xs font-medium text-white/50 uppercase">Received Date</p>
                                 <div className="mt-1 flex items-center gap-2">
-                                    <Calendar className="h-4 w-4 text-slate-400" />
-                                    <p className="font-medium">
+                                    <Calendar className="h-4 w-4 text-white/40" />
+                                    <p className="font-medium text-white">
                                         {currentReceipt.receivedDate
                                             ? format(new Date(currentReceipt.receivedDate), 'PPP')
                                             : 'Pending'}
@@ -287,14 +299,16 @@ export default function ReceiptDetailsPage() {
 
                             {currentReceipt.validatedBy && (
                                 <>
-                                    <Separator />
+                                    <Separator className="bg-white/10" />
                                     <div>
-                                        <p className="text-xs font-medium text-slate-500 uppercase">Validated By</p>
+                                        <p className="text-xs font-medium text-white/50 uppercase">Validated By</p>
                                         <div className="mt-1 flex items-center gap-2">
-                                            <CheckCircle className="h-4 w-4 text-emerald-500" />
+                                            <CheckCircle className="h-4 w-4 text-emerald-400" />
                                             <div>
-                                                <p className="font-medium">{currentReceipt.validatedBy.name}</p>
-                                                <p className="text-xs text-slate-500">
+                                                <p className="font-medium text-white">
+                                                    {typeof currentReceipt.validatedBy === 'object' ? currentReceipt.validatedBy.name : 'Unknown User'}
+                                                </p>
+                                                <p className="text-xs text-white/60">
                                                     {currentReceipt.validatedAt && format(new Date(currentReceipt.validatedAt), 'PP p')}
                                                 </p>
                                             </div>
