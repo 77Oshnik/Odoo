@@ -4,6 +4,8 @@ const express = require('express');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
 const productRoutes = require('./routes/product.routes');
+const categoryRoutes = require('./routes/category.routes');
+const warehouseRoutes = require('./routes/warehouse.routes');
 
 const app = express();
 
@@ -13,6 +15,8 @@ connectDB();
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/warehouses', warehouseRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello World from Express!');
