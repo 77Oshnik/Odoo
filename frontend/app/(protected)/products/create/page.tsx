@@ -18,21 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Switch } from "@/components/ui/switch"
 
-const productSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  sku: z.string().min(1, "SKU is required"),
-  category: z.string().min(1, "Category is required"),
-  unitOfMeasure: z.string().min(1, "Unit of measure is required"),
-  reorderingRule: z
-    .object({
-      minimumQuantity: z.coerce.number().min(0),
-      maximumQuantity: z.coerce.number().min(0),
-    })
-    .optional(),
-  isActive: z.boolean().default(true),
-})
-
-type ProductFormValues = z.infer<typeof productSchema>
+import { productSchema } from "@/schemas"
+import type { ProductFormValues } from "@/types"
 
 export default function CreateProductPage() {
   const dispatch = useDispatch<AppDispatch>()
