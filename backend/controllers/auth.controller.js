@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
+const { sendOtpEmail } = require('../utils/email');
 
 const buildToken = (userId) =>
   jwt.sign({ id: userId }, process.env.JWT_SECRET, {
@@ -69,9 +70,11 @@ const forgotPassword = async (req, res) => {
     user.otp = { code, expiresAt };
     await user.save();
 
-    return res.json({ message: 'OTP generated successfully', code });
+    await sendOtpEmail({ to: user.email, code });
+
+    return res.json({ message: 'OTP sent successfully' });
   } catch (error) {
-    return res.status(500).json({ message: 'Failed to generate OTP', error: error.message });
+    return res.status(500).json({ message: 'Failed to send OTP', error: error.message });
   }
 };
 
