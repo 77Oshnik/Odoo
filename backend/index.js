@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth.routes');
 const productRoutes = require('./routes/product.routes');
 const categoryRoutes = require('./routes/category.routes');
 const warehouseRoutes = require('./routes/warehouse.routes');
+const receiptRoutes = require('./routes/receipt.routes');
 const cors = require('cors');
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/warehouses', warehouseRoutes);
+app.use('/api/receipts', receiptRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello World from Express!');
