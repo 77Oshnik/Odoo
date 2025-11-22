@@ -1,189 +1,456 @@
 const Receipt = require('../models/receipt.model');
 const Product = require('../models/product.model');
+const Warehouse = require('../models/warehouse.model');
 const StockLedger = require('../models/stockLedger.model');
 const mongoose = require('mongoose');
 
-
+/**
+ * Get all receipts with optional filtering
+ * Query params: status, warehouse, supplier
+ */
 const getReceipts = async (req, res) => {
   try {
-    const receipts = await Receipt.find({}).populate('warehouse', 'name').populate('products.product', 'name sku');
-    res.status(200).json(receipts);
+    const { status, warehouse, supplier } = req.query;
+    const filter = {};
+
+    if (status) {
+      filter.status = status;
+    }
+    if (warehouse) {
+      filter.warehouse = warehouse;
+    }
+    if (supplier) {
+      filter.supplier = { $regex: supplier, $options: 'i' };
+    }
+
+    const receipts = await Receipt.find(filter)
+      .populate('warehouse', 'name location')
+      .populate('products.product', 'name sku unitOfMeasure')
+      .populate('validatedBy', 'name email')
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: receipts.length,
+      data: receipts
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
   }
 };
 
-
+/**
+ * Get a single receipt by ID
+ */
 const getReceipt = async (req, res) => {
   try {
-    const receipt = await Receipt.findById(req.params.id).populate('warehouse', 'name').populate('products.product', 'name sku');
+    const receipt = await Receipt.findById(req.params.id)
+      .populate('warehouse', 'name location')
+      .populate('products.product', 'name sku unitOfMeasure category')
+      .populate('validatedBy', 'name email');
+
     if (!receipt) {
-      return res.status(404).json({ message: 'Receipt not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Receipt not found'
+      });
     }
-    res.status(200).json(receipt);
+
+    return res.status(200).json({
+      success: true,
+      data: receipt
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid receipt ID'
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
   }
 };
 
-
+/**
+ * Create a new receipt
+ */
 const createReceipt = async (req, res) => {
   try {
-    const { supplier, warehouse, products, status, notes } = req.body;
+    const { supplier, warehouse, products, status, receivedDate, notes } = req.body;
+
+    // Validate warehouse exists
+    const warehouseExists = await Warehouse.findById(warehouse);
+    if (!warehouseExists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Warehouse not found'
+      });
+    }
+
+    // Validate all products exist
+    for (const item of products) {
+      const product = await Product.findById(item.product);
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          message: `Product with ID ${item.product} not found`
+        });
+      }
+    }
+
     const receipt = new Receipt({
-      supplier,
+      supplier: supplier || undefined,
       warehouse,
       products,
-      status,
-      notes,
+      status: status || 'draft',
+      receivedDate: receivedDate ? new Date(receivedDate) : undefined,
+      notes: notes || undefined
     });
+
     const createdReceipt = await receipt.save();
-    res.status(201).json(createdReceipt);
+    const populatedReceipt = await Receipt.findById(createdReceipt._id)
+      .populate('warehouse', 'name location')
+      .populate('products.product', 'name sku unitOfMeasure');
+
+    return res.status(201).json({
+      success: true,
+      message: 'Receipt created successfully',
+      data: populatedReceipt
+    });
   } catch (error) {
-    res.status(400).json({ message: 'Error creating receipt', error: error.message });
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        error: error.message
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: 'Error creating receipt',
+      error: error.message
+    });
   }
 };
 
-
+/**
+ * Update an existing receipt
+ */
 const updateReceipt = async (req, res) => {
   try {
-    const { supplier, warehouse, products, status, notes } = req.body;
+    const { supplier, warehouse, products, status, receivedDate, notes } = req.body;
     const receipt = await Receipt.findById(req.params.id);
 
     if (!receipt) {
-      return res.status(404).json({ message: 'Receipt not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Receipt not found'
+      });
     }
 
+    // Cannot update done or canceled receipts
     if (receipt.status === 'done' || receipt.status === 'canceled') {
-        return res.status(400).json({ message: `Cannot update a receipt that is already ${receipt.status}` });
+      return res.status(400).json({
+        success: false,
+        message: `Cannot update a receipt that is ${receipt.status}`
+      });
     }
 
-    receipt.supplier = supplier || receipt.supplier;
-    receipt.warehouse = warehouse || receipt.warehouse;
-    receipt.products = products || receipt.products;
-    receipt.status = status || receipt.status;
-    receipt.notes = notes || receipt.notes;
+    // Validate warehouse if provided
+    if (warehouse) {
+      const warehouseExists = await Warehouse.findById(warehouse);
+      if (!warehouseExists) {
+        return res.status(404).json({
+          success: false,
+          message: 'Warehouse not found'
+        });
+      }
+      receipt.warehouse = warehouse;
+    }
+
+    // Validate products if provided
+    if (products) {
+      for (const item of products) {
+        const product = await Product.findById(item.product);
+        if (!product) {
+          return res.status(404).json({
+            success: false,
+            message: `Product with ID ${item.product} not found`
+          });
+        }
+      }
+      receipt.products = products;
+    }
+
+    // Update fields
+    if (supplier !== undefined) receipt.supplier = supplier;
+    if (status !== undefined) receipt.status = status;
+    if (receivedDate !== undefined) receipt.receivedDate = new Date(receivedDate);
+    if (notes !== undefined) receipt.notes = notes;
 
     const updatedReceipt = await receipt.save();
-    res.status(200).json(updatedReceipt);
+    const populatedReceipt = await Receipt.findById(updatedReceipt._id)
+      .populate('warehouse', 'name location')
+      .populate('products.product', 'name sku unitOfMeasure');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Receipt updated successfully',
+      data: populatedReceipt
+    });
   } catch (error) {
-    res.status(400).json({ message: 'Error updating receipt', error: error.message });
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        error: error.message
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid receipt ID'
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: 'Error updating receipt',
+      error: error.message
+    });
   }
 };
 
-
+/**
+ * Delete a receipt
+ */
 const deleteReceipt = async (req, res) => {
-    try {
-        const receipt = await Receipt.findById(req.params.id);
+  try {
+    const receipt = await Receipt.findById(req.params.id);
 
-        if (!receipt) {
-            return res.status(404).json({ message: 'Receipt not found' });
-        }
-
-        if (receipt.status === 'done') {
-            return res.status(400).json({ message: 'Cannot delete a receipt that has been validated.' });
-        }
-
-        await receipt.remove();
-        res.status(200).json({ message: 'Receipt removed' });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+    if (!receipt) {
+      return res.status(404).json({
+        success: false,
+        message: 'Receipt not found'
+      });
     }
+
+    // Cannot delete validated receipts
+    if (receipt.status === 'done') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete a receipt that has been validated'
+      });
+    }
+
+    await Receipt.deleteOne({ _id: req.params.id });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Receipt deleted successfully'
+    });
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid receipt ID'
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
 };
 
-
+/**
+ * Validate a receipt (update stock and create ledger entries)
+ * This should only be called when receipt status is 'ready'
+ */
 const validateReceipt = async (req, res) => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-        const receipt = await Receipt.findById(req.params.id).session(session);
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-        if (!receipt) {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(404).json({ message: 'Receipt not found' });
-        }
+  try {
+    const receipt = await Receipt.findById(req.params.id).session(session);
 
-        if (receipt.status !== 'ready') {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(400).json({ message: `Receipt must be in 'ready' state to validate. Current state: ${receipt.status}` });
-        }
+    if (!receipt) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({
+        success: false,
+        message: 'Receipt not found'
+      });
+    }
 
-        for (const item of receipt.products) {
-            const product = await Product.findById(item.product).session(session);
-            if (!product) {
-                throw new Error(`Product with id ${item.product} not found.`);
-            }
+    // Only ready receipts can be validated
+    if (receipt.status !== 'ready') {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        success: false,
+        message: `Receipt must be in 'ready' state to validate. Current state: ${receipt.status}`
+      });
+    }
 
-            // Update stock in specific warehouse
-            const stockLocation = product.stockByLocation.find(loc => loc.warehouse.toString() === receipt.warehouse.toString());
-            if (stockLocation) {
-                stockLocation.quantity += item.quantityReceived;
-            } else {
-                product.stockByLocation.push({ warehouse: receipt.warehouse, quantity: item.quantityReceived });
-            }
+    // Validate warehouse exists
+    const warehouse = await Warehouse.findById(receipt.warehouse).session(session);
+    if (!warehouse) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({
+        success: false,
+        message: 'Warehouse not found'
+      });
+    }
 
-            // Update total stock
-            product.totalStock += item.quantityReceived;
-            
-            const balanceAfter = product.totalStock;
-
-            await product.save({ session });
-            
-            // Create stock ledger entry
-            const ledgerEntry = new StockLedger({
-                product: product._id,
-                warehouse: receipt.warehouse,
-                transactionType: 'receipt',
-                referenceDocument: {
-                    documentType: 'Receipt',
-                    documentId: receipt._id,
-                    documentNumber: receipt.receiptNumber
-                },
-                quantityChange: item.quantityReceived,
-                balanceAfter: balanceAfter,
-                performedBy: req.user._id, // Assumes user is authenticated and req.user is available
-            });
-            await ledgerEntry.save({ session });
-        }
-
-        receipt.status = 'done';
-        receipt.validatedBy = req.user._id;
-        receipt.validatedAt = Date.now();
-        receipt.receivedDate = Date.now();
-        await receipt.save({ session });
-
-        await session.commitTransaction();
-        session.endSession();
-
-        res.status(200).json({ message: 'Receipt validated successfully', receipt });
-
-    } catch (error) {
+    // Process each product in the receipt
+    for (const item of receipt.products) {
+      const product = await Product.findById(item.product).session(session);
+      if (!product) {
         await session.abortTransaction();
         session.endSession();
-        res.status(500).json({ message: 'Server error during validation', error: error.message });
+        return res.status(404).json({
+          success: false,
+          message: `Product with ID ${item.product} not found`
+        });
+      }
+
+      // Update stock in specific warehouse
+      const stockLocation = product.stockByLocation.find(
+        loc => loc.warehouse.toString() === receipt.warehouse.toString()
+      );
+
+      if (stockLocation) {
+        stockLocation.quantity += item.quantityReceived;
+      } else {
+        product.stockByLocation.push({
+          warehouse: receipt.warehouse,
+          quantity: item.quantityReceived
+        });
+      }
+
+      // Update total stock
+      product.totalStock += item.quantityReceived;
+      const balanceAfter = product.totalStock;
+
+      await product.save({ session });
+
+      // Create stock ledger entry
+      const ledgerEntry = new StockLedger({
+        product: product._id,
+        warehouse: receipt.warehouse,
+        transactionType: 'receipt',
+        referenceDocument: {
+          documentType: 'Receipt',
+          documentId: receipt._id,
+          documentNumber: receipt.receiptNumber
+        },
+        quantityChange: item.quantityReceived,
+        balanceAfter: balanceAfter,
+        performedBy: req.user.id,
+        notes: `Receipt validated: ${receipt.receiptNumber}`
+      });
+
+      await ledgerEntry.save({ session });
     }
+
+    // Update receipt status
+    receipt.status = 'done';
+    receipt.validatedBy = req.user.id;
+    receipt.validatedAt = new Date();
+    if (!receipt.receivedDate) {
+      receipt.receivedDate = new Date();
+    }
+    await receipt.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    // Populate and return updated receipt
+    const validatedReceipt = await Receipt.findById(receipt._id)
+      .populate('warehouse', 'name location')
+      .populate('products.product', 'name sku unitOfMeasure')
+      .populate('validatedBy', 'name email');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Receipt validated successfully',
+      data: validatedReceipt
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    return res.status(500).json({
+      success: false,
+      message: 'Server error during validation',
+      error: error.message
+    });
+  }
 };
 
-
+/**
+ * Cancel a receipt
+ */
 const cancelReceipt = async (req, res) => {
   try {
     const receipt = await Receipt.findById(req.params.id);
 
     if (!receipt) {
-      return res.status(404).json({ message: 'Receipt not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Receipt not found'
+      });
     }
 
+    // Cannot cancel already done receipts
     if (receipt.status === 'done') {
-        return res.status(400).json({ message: 'Cannot cancel a receipt that is already done.' });
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot cancel a receipt that is already done'
+      });
+    }
+
+    // Already canceled
+    if (receipt.status === 'canceled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Receipt is already canceled'
+      });
     }
 
     receipt.status = 'canceled';
     const updatedReceipt = await receipt.save();
-    res.status(200).json(updatedReceipt);
+
+    const populatedReceipt = await Receipt.findById(updatedReceipt._id)
+      .populate('warehouse', 'name location')
+      .populate('products.product', 'name sku unitOfMeasure');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Receipt canceled successfully',
+      data: populatedReceipt
+    });
   } catch (error) {
-    res.status(400).json({ message: 'Error canceling receipt', error: error.message });
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid receipt ID'
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: 'Error canceling receipt',
+      error: error.message
+    });
   }
 };
 
@@ -194,5 +461,5 @@ module.exports = {
   updateReceipt,
   deleteReceipt,
   validateReceipt,
-  cancelReceipt,
+  cancelReceipt
 };
