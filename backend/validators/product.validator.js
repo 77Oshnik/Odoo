@@ -26,7 +26,17 @@ const createProductValidator = [
   body('category').optional().isMongoId().withMessage(mongoIdMessage),
   body('unitOfMeasure').optional().trim(),
   ...stockByLocationRules(),
-  body('reorderingRule').optional().isMongoId().withMessage(mongoIdMessage),
+  body('reorderingRule').optional().isObject().withMessage('reorderingRule must be an object'),
+  body('reorderingRule.minimumQuantity')
+    .if(body('reorderingRule').exists())
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('minimumQuantity must be a non-negative number'),
+  body('reorderingRule.maximumQuantity')
+    .if(body('reorderingRule').exists())
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('maximumQuantity must be a non-negative number'),
   body('isActive').optional().isBoolean().withMessage('isActive must be a boolean')
 ];
 
@@ -37,7 +47,17 @@ const updateProductValidator = [
   body('category').optional().isMongoId().withMessage(mongoIdMessage),
   body('unitOfMeasure').optional().trim(),
   ...stockByLocationRules(),
-  body('reorderingRule').optional().isMongoId().withMessage(mongoIdMessage),
+  body('reorderingRule').optional().isObject().withMessage('reorderingRule must be an object'),
+  body('reorderingRule.minimumQuantity')
+    .if(body('reorderingRule').exists())
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('minimumQuantity must be a non-negative number'),
+  body('reorderingRule.maximumQuantity')
+    .if(body('reorderingRule').exists())
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('maximumQuantity must be a non-negative number'),
   body('isActive').optional().isBoolean().withMessage('isActive must be a boolean')
 ];
 

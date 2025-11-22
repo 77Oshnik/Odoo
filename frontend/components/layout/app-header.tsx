@@ -63,10 +63,9 @@ export const AppHeader = () => {
       type: "menu" as const,
       label: "Stock",
       items: [
-        { label: "Products", href: "/products" },
-        { label: "Categories", href: "/categories" },
-        { label: "Reordering Rules", href: "/reordering-rules" },
-      ],
+        { label: 'Products', href: '/products' },
+        { label: 'Categories', href: '/categories' },
+      ]
     },
     {
       type: "link" as const,
@@ -94,19 +93,10 @@ export const AppHeader = () => {
             <NavigationMenuList className="justify-start gap-2">
               {navConfig.map((item) => (
                 <NavigationMenuItem key={item.label}>
-                  {item.type === "link" ? (
-                    <Link href={item.href}>
-                      <NavigationMenuLink
-                        active={pathname === item.href}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                          pathname === item.href
-                            ? "bg-white/10 text-white"
-                            : "text-white/60 hover:text-white hover:bg-white/5"
-                        }`}
-                      >
-                        {item.label}
-                      </NavigationMenuLink>
-                    </Link>
+                  {item.type === 'link' ? (
+                    <NavigationMenuLink asChild active={pathname === item.href}>
+                      <Link href={item.href}>{item.label}</Link>
+                    </NavigationMenuLink>
                   ) : (
                     <>
                       <NavigationMenuTrigger className="px-3 py-2 rounded-lg text-sm font-medium text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/10 data-[state=open]:bg-indigo-500/20 data-[state=open]:text-indigo-200 transition-all duration-200">
@@ -116,18 +106,9 @@ export const AppHeader = () => {
                         <ul className="grid gap-2 rounded-lg bg-white/5 backdrop-blur-xl border border-white/10 p-3 shadow-2xl md:w-56">
                           {item.items.map((subItem) => (
                             <li key={subItem.href}>
-                              <Link href={subItem.href}>
-                                <NavigationMenuLink
-                                  active={pathname.startsWith(subItem.href)}
-                                  className={`block px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
-                                    pathname.startsWith(subItem.href)
-                                      ? "bg-indigo-500/20 text-indigo-200"
-                                      : "text-white/60 hover:text-white hover:bg-white/10"
-                                  }`}
-                                >
-                                  {subItem.label}
-                                </NavigationMenuLink>
-                              </Link>
+                              <NavigationMenuLink asChild active={pathname.startsWith(subItem.href)}>
+                                <Link href={subItem.href}>{subItem.label}</Link>
+                              </NavigationMenuLink>
                             </li>
                           ))}
                         </ul>
